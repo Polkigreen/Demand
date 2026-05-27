@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-brand-bg: #1e0d02;
+  --color-brand-surface: #2b1405;
+  --color-brand-card: #341908;
+  --color-brand-card-high: #42210d;
+  --color-brand-accent: #ff9100;
+  --color-brand-accent-faded: rgba(255, 145, 0, 0.15);
+}
+
+body {
+  background-color: var(--color-brand-bg);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.glass-panel {
+  background-color: rgba(43, 20, 5, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glowing-shadow {
+  box-shadow: 0 4px 30px rgba(255, 145, 0, 0.08);
+}
+
+.glowing-active {
+  box-shadow: 0 0 20px rgba(255, 145, 0, 0.4);
+}

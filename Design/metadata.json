@@ -1,0 +1,6 @@
+{
+  "name": "NeighborHelp",
+  "description": "A trusted neighborhood help platform for everyday tasks, assembly, pet care, and professional services.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,186 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  REQUESTER
+  HELPER
+}
+
+enum RequestStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum BookingStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+model User {
+  id              String        @id @default(uuid())
+  email           String?       @unique
+  phone           String?       @unique
+  name            String
+  personnummer    String?       @unique // Stored securely/encrypted at app level or db level
+  roles           Role[]        @default([REQUESTER])
+  bankidVerified  Boolean       @default(false)
+  bankidRef       String?       // Direct reference to the BankID transaction orderRef
+  googleId        String?       @unique
+  avatarUrl       String?
+  passwordHash    String?       
+  hasFskatt       Boolean       @default(false)
+  orgNumber       String?       
+  vatNumber       String?       
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  requestsCreated Request[]     @relation("UserRequests")
+  applications    Application[] @relation("HelperApplications")
+  bookingsAsRequester Booking[] @relation("BookingRequester")
+  bookingsAsHelper    Booking[] @relation("BookingHelper")
+  sentMessages    Message[]     @relation("SentMessages")
+  receivedMessages Message[]    @relation("ReceivedMessages")
+  reviewsWritten  Review[]      @relation("ReviewsWritten")
+  reviewsReceived Review[]      @relation("ReviewsReceived")
+  notifications   Notification[]
+  taxSummariesAsHelper    YearlyTaxSummary[] @relation("HelperTaxSummaries")
+  taxSummariesAsRequester YearlyTaxSummary[] @relation("RequesterTaxSummaries")
+}
+
+model Request {
+  id           String        @id @default(uuid())
+  title        String
+  description  String
+  location     String
+  latitude     Float?
+  longitude    Float?
+  category     String
+  price        Float
+  status       RequestStatus @default(OPEN)
+  requesterId  String
+  requester    User          @relation("UserRequests", fields: [requesterId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  applications Application[]
+  bookings     Booking[]
+}
+
+model Application {
+  id            String            @id @default(uuid())
+  requestId     String
+  request       Request           @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  helperId      String
+  helper        User              @relation("HelperApplications", fields: [helperId], references: [id], onDelete: Cascade)
+  status        ApplicationStatus @default(PENDING)
+  priceProposal Float?
+  coverLetter   String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model Booking {
+  id          String        @id @default(uuid())
+  requestId   String
+  request     Request       @relation(fields: [requestId], references: [id])
+  requesterId String
+  requester   User          @relation("BookingRequester", fields: [requesterId], references: [id])
+  helperId    String
+  helper      User          @relation("BookingHelper", fields: [helperId], references: [id])
+  status      BookingStatus @default(SCHEDULED)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  payment     Payment?
+  reviews     Review[]
+  messages    Message[]
+}
+
+model Message {
+  id          String    @id @default(uuid())
+  bookingId   String?
+  booking     Booking?  @relation(fields: [bookingId], references: [id])
+  senderId    String
+  sender      User      @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId  String
+  receiver    User      @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  content     String
+  isRead      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+}
+
+model Payment {
+  id                     String        @id @default(uuid())
+  bookingId              String        @unique
+  booking                Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  amount                 Float
+  currency               String        @default("SEK")
+  status                 PaymentStatus @default(PENDING)
+  stripePaymentIntentId  String?       @unique
+  stripeSessionId        String?       @unique
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+}
+
+model Review {
+  id          String   @id @default(uuid())
+  bookingId   String
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  reviewerId  String
+  reviewer    User     @relation("ReviewsWritten", fields: [reviewerId], references: [id])
+  revieweeId  String
+  reviewee    User     @relation("ReviewsReceived", fields: [revieweeId], references: [id])
+  rating      Int      // 1 to 5
+  comment     String?
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  type      String   // E.g. "APPLICATION", "BOOKING", "MESSAGE", "PAYMENT"
+  createdAt DateTime @default(now())
+}
+
+model YearlyTaxSummary {
+  id          String   @id @default(uuid())
+  helperId    String
+  helper      User     @relation("HelperTaxSummaries", fields: [helperId], references: [id])
+  requesterId String
+  requester   User     @relation("RequesterTaxSummaries", fields: [requesterId], references: [id])
+  year        Int
+  totalAmount Float    @default(0.0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([helperId, requesterId, year])
+}

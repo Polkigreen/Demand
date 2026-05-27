@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.next/
+out/
+*.env
+.env.*
+!.env.example
+.cache/
+*.log
+.DS_Store
+android/
+ios/
