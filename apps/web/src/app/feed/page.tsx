@@ -123,7 +123,7 @@ export default function FeedPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: i * 0.05 }}
               >
-                <Link href={`/requests/${task.id}`} className="block bg-brand-surface rounded-2xl p-5 border border-[#44210c] glowing-shadow hover:-translate-y-1 hover:border-brand-accent/40 flex flex-col sm:flex-row gap-5 transition-all group">
+                <Link href={`/request?id=${task.id}`} className="block bg-brand-surface rounded-2xl p-5 border border-[#44210c] glowing-shadow hover:-translate-y-1 hover:border-brand-accent/40 flex flex-col sm:flex-row gap-5 transition-all group">
                   <div className="w-full sm:w-32 h-32 flex-shrink-0 relative overflow-hidden rounded-xl bg-brand-card border border-[#44210c] shadow-md">
                     <div className="w-full h-full bg-brand-card flex items-center justify-center text-gray-500 text-xs">
                       {task.category?.[0] || "?"}

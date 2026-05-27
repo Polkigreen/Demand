@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import { MapPin, BadgeCheck, Clock, ArrowLeft, Loader2, Check, X, User, Star, Send } from "lucide-react";
+import { MapPin, BadgeCheck, Clock, ArrowLeft, Loader2, Check, X, User } from "lucide-react";
 import { fetchRequest, type RequestItem } from "@/lib/requests";
 import { getApplications, applyToRequest, acceptApplication, rejectApplication, type Application } from "@/lib/applications";
 import Link from "next/link";
 
-export default function RequestDetailPage() {
-  const { id } = useParams<{ id: string }>();
+function RequestContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
   const router = useRouter();
   const { user } = useAuthStore();
   const [request, setRequest] = useState<RequestItem | null>(null);
@@ -63,6 +64,7 @@ export default function RequestDetailPage() {
   };
 
   const handleAccept = async (appId: string) => {
+    if (!id) return;
     try {
       await acceptApplication(appId);
       const apps = await getApplications(id);
@@ -71,12 +73,22 @@ export default function RequestDetailPage() {
   };
 
   const handleReject = async (appId: string) => {
+    if (!id) return;
     try {
       await rejectApplication(appId);
       const apps = await getApplications(id);
       setApplications(apps);
     } catch {}
   };
+
+  if (!id) {
+    return (
+      <div className="py-24 text-center text-gray-400">
+        <p className="font-bold">Ingen annons vald</p>
+        <Link href="/feed" className="text-brand-accent text-sm underline mt-2 inline-block">Tillbaka till feed</Link>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -234,5 +246,13 @@ export default function RequestDetailPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function RequestPage() {
+  return (
+    <Suspense fallback={<div className="py-24 text-center"><Loader2 className="h-8 w-8 animate-spin text-brand-accent mx-auto" /></div>}>
+      <RequestContent />
+    </Suspense>
   );
 }

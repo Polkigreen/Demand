@@ -107,7 +107,7 @@ export default function BookingsPage() {
               <div key={booking.id} className="bg-brand-surface border border-[#44210c] rounded-3xl p-5 sm:p-6 space-y-4 hover:border-brand-accent/20 transition-colors">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <Link href={`/requests/${booking.requestId}`} className="font-extrabold text-white hover:text-brand-accent transition-colors line-clamp-1">
+                    <Link href={`/request?id=${booking.requestId}`} className="font-extrabold text-white hover:text-brand-accent transition-colors line-clamp-1">
                       {booking.request.title}
                     </Link>
                     <p className="text-xs text-gray-400 flex items-center gap-1.5 mt-1">
